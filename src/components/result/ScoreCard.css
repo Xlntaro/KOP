@@ -1,0 +1,37 @@
+.score-card {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.score-card.win {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: white;
+}
+
+.score-card.lose {
+  background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+  color: white;
+}
+
+.score-title {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 2rem;
+}
+
+.score-details {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.score-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: rgba(255,255,255,0.2);
+  border-radius: 6px;
+}
