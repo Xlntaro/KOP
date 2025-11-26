@@ -5,9 +5,10 @@ import { ResultsPage } from './pages/ResultsPage';
 import './App.css';
 
 function App() {
-  // Simple page state management (no routing as specified)
   const [currentPage, setCurrentPage] = useState('start');
-  const [gameSize, setGameSize] = useState(5);
+  const [gameSize, setGameSize] = useState(3); // Default 3x3
+  
+  // Стан для збереження результатів останньої гри
   const [gameResults, setGameResults] = useState({
     moves: 0,
     time: '00:00',
@@ -19,19 +20,10 @@ function App() {
     setCurrentPage('game');
   };
 
-  const handleEndGame = () => {
-    // Placeholder: Set results
-    setGameResults({
-      moves: 25,
-      time: '02:30',
-      isWin: true
-    });
+  // Отримуємо результати з GamePage
+  const handleEndGame = (results) => {
+    setGameResults(results);
     setCurrentPage('results');
-  };
-
-  const handleRestart = () => {
-    // Placeholder: Reset game state
-    setCurrentPage('game');
   };
 
   const handlePlayAgain = () => {
@@ -47,13 +39,17 @@ function App() {
       {currentPage === 'start' && (
         <StartPage onStartGame={handleStartGame} />
       )}
+      
       {currentPage === 'game' && (
         <GamePage 
           size={gameSize}
           onEndGame={handleEndGame}
-          onRestart={handleRestart}
+          // onRestart обробляється всередині GamePage, 
+          // але можна передати пусту функцію або логування, якщо треба
+          onRestart={() => console.log('Restart triggered form GamePage')}
         />
       )}
+      
       {currentPage === 'results' && (
         <ResultsPage 
           moves={gameResults.moves}
