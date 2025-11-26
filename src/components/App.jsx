@@ -1,49 +1,55 @@
 import React, { useState } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom'; // Імпорти для роутингу
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { StartPage } from './pages/StartPage';
 import { GamePage } from './pages/GamePage';
 import { ResultsPage } from './pages/ResultsPage';
-import { UserPage } from './pages/UserPage'; // Нова сторінка
+import { UserPage } from './pages/UserPage';
 import { Modal } from './common/Modal';
 import { SettingsForm } from './settings/SettingsForm';
 import { GameOverModal } from './game/GameOverModal';
 import { Button } from './common/Button';
-import { useGame } from '../context/GameContext'; // Використовуємо контекст
+import { useGameStore } from '../store/gameStore'; // Zustand store
 import './App.css';
 
 function App() {
-  const { settings, updateSettings, setGameResults, gameResults } = useGame();
-  const navigate = useNavigate(); // Хук для навігації
-
+  const navigate = useNavigate();
+  
+  // Отримуємо дані зі стору
+  const { settings, updateSettings, addResult } = useGameStore();
+  
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isGameOverOpen, setIsGameOverOpen] = useState(false);
+  
+  // Локальний стейт для поточної гри (розмір), щоб можна було робити рестарт
   const [activeSize, setActiveSize] = useState(settings.size);
-
-  const handleSaveSettings = (newSettings) => {
-    updateSettings(newSettings);
-    setActiveSize(newSettings.size);
-    setIsSettingsOpen(false);
-  };
+  const [lastGameResult, setLastGameResult] = useState(null);
 
   const handleStartGame = (sizeOverride) => {
     const size = sizeOverride || settings.size;
     setActiveSize(size);
-    navigate('/game'); // Навігація на гру
+    navigate('/game');
     setIsGameOverOpen(false);
   };
 
   const handleEndGame = (results) => {
-    setGameResults({ ...results, level: activeSize });
+    const fullResult = { 
+      ...results, 
+      level: activeSize,
+      username: settings.username 
+    };
+    
+    setLastGameResult(fullResult);
+    addResult(fullResult); // Зберігаємо в глобальну історію Zustand
+
     if (results.isWin) {
       setIsGameOverOpen(true);
     } else {
-      navigate('/results'); // Навігація на результати
+      navigate('/results');
     }
   };
 
   const handleRestart = () => {
     setIsGameOverOpen(false);
-    // Хак для перезавантаження компонента гри
     navigate('/');
     setTimeout(() => navigate('/game'), 0);
   };
@@ -51,7 +57,7 @@ function App() {
   const handleNextLevel = () => {
     const nextSize = activeSize >= 10 ? 10 : activeSize + 1;
     setActiveSize(nextSize);
-    updateSettings({ ...settings, size: nextSize });
+    updateSettings({ size: nextSize }); // Оновлюємо глобальний розмір
     setIsGameOverOpen(false);
     navigate('/');
     setTimeout(() => navigate('/game'), 0);
@@ -59,11 +65,15 @@ function App() {
 
   return (
     <div className="App">
-      {/* Навігаційна панель (можна винести в окремий компонент) */}
       <nav style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', gap: '10px', zIndex: 100 }}>
         <Button 
           text="👤 Профіль" 
-          onClick={() => navigate(`/user/${settings.username}`)} // Динамічний роутинг з ID
+          onClick={() => navigate(`/user/${settings.username}`)}
+          variant="secondary" 
+        />
+        <Button 
+          text="📊 Таблиця" 
+          onClick={() => navigate('/results')}
           variant="secondary" 
         />
         <Button 
@@ -89,20 +99,7 @@ function App() {
             />
           } 
         />
-        <Route 
-          path="/results" 
-          element={
-            <ResultsPage 
-              moves={gameResults.moves}
-              time={gameResults.time}
-              level={activeSize}
-              isWin={gameResults.isWin}
-              onPlayAgain={() => handleStartGame(activeSize)}
-              onBackToMenu={() => navigate('/')}
-            />
-          } 
-        />
-        {/* Динамічний роут для користувача */}
+        <Route path="/results" element={<ResultsPage />} />
         <Route path="/user/:userId" element={<UserPage />} />
       </Routes>
 
@@ -111,15 +108,13 @@ function App() {
         onClose={() => setIsSettingsOpen(false)} 
         title="Налаштування гри"
       >
-        <SettingsForm 
-          initialSettings={settings} 
-          onSave={handleSaveSettings} 
-        />
+        {/* Форма тепер сама зв'язується зі стором */}
+        <SettingsForm onClose={() => setIsSettingsOpen(false)} />
       </Modal>
 
       <GameOverModal 
         isOpen={isGameOverOpen}
-        results={gameResults}
+        results={lastGameResult || {}}
         onRestart={handleRestart}
         onNextLevel={handleNextLevel}
       />

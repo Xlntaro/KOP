@@ -2,28 +2,30 @@ import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Button } from '../common/Button';
+import { useGameStore } from '../../store/gameStore'; // Імпорт стору
 import './SettingsForm.css';
 
-// Схема валідації
 const SettingsSchema = Yup.object().shape({
   size: Yup.number()
     .min(3, 'Мінімум 3x3')
     .max(10, 'Максимум 10x10')
     .required('Обов\'язкове поле'),
-  // Можна додати інші поля, наприклад, ім'я гравця
   username: Yup.string()
     .min(2, 'Занадто коротке ім\'я')
     .max(20, 'Занадто довге ім\'я')
 });
 
-export const SettingsForm = ({ initialSettings, onSave }) => {
+export const SettingsForm = ({ onClose }) => {
+  // Отримуємо налаштування та функцію оновлення зі стору
+  const { settings, updateSettings } = useGameStore();
+
   return (
     <Formik
-      initialValues={initialSettings}
+      initialValues={settings} // Початкові значення зі стору
       validationSchema={SettingsSchema}
-      onSubmit={(values, { setSubmitting }) => {
-        onSave(values);
-        setSubmitting(false);
+      onSubmit={(values) => {
+        updateSettings(values); // Оновлюємо глобальний стейт
+        if (onClose) onClose();
       }}
     >
       {({ isSubmitting }) => (
