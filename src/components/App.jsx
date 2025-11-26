@@ -1,132 +1,111 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom'; // Імпорти для роутингу
 import { StartPage } from './pages/StartPage';
 import { GamePage } from './pages/GamePage';
 import { ResultsPage } from './pages/ResultsPage';
+import { UserPage } from './pages/UserPage'; // Нова сторінка
 import { Modal } from './common/Modal';
 import { SettingsForm } from './settings/SettingsForm';
 import { GameOverModal } from './game/GameOverModal';
-import { Button } from './common/Button'; // Для кнопки налаштувань на головній
+import { Button } from './common/Button';
+import { useGame } from '../context/GameContext'; // Використовуємо контекст
 import './App.css';
 
 function App() {
-  // Завантаження налаштувань з localStorage або дефолтні значення
-  const getInitialSettings = () => {
-    const savedSettings = localStorage.getItem('gameSettings');
-    return savedSettings 
-      ? JSON.parse(savedSettings) 
-      : { size: 5, username: 'Гравець' };
-  };
+  const { settings, updateSettings, setGameResults, gameResults } = useGame();
+  const navigate = useNavigate(); // Хук для навігації
 
-  const [settings, setSettings] = useState(getInitialSettings);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isGameOverOpen, setIsGameOverOpen] = useState(false);
-
-  const [currentPage, setCurrentPage] = useState('start');
-  
-  // gameSize тепер береться з settings, але може бути змінений динамічно (Next Level)
-  const [activeSize, setActiveSize] = useState(settings.size); 
-  
-  const [gameResults, setGameResults] = useState({
-    moves: 0,
-    time: '00:00',
-    isWin: false,
-    level: settings.size
-  });
-
-  // Збереження в localStorage при зміні налаштувань
-  useEffect(() => {
-    localStorage.setItem('gameSettings', JSON.stringify(settings));
-  }, [settings]);
+  const [activeSize, setActiveSize] = useState(settings.size);
 
   const handleSaveSettings = (newSettings) => {
-    setSettings(newSettings);
-    setActiveSize(newSettings.size); // Оновлюємо поточний розмір
+    updateSettings(newSettings);
+    setActiveSize(newSettings.size);
     setIsSettingsOpen(false);
   };
 
   const handleStartGame = (sizeOverride) => {
-    // Якщо передали розмір (наприклад, з кнопок швидкого вибору), використовуємо його
-    // Інакше беремо з налаштувань
-    setActiveSize(sizeOverride || settings.size);
-    setCurrentPage('game');
+    const size = sizeOverride || settings.size;
+    setActiveSize(size);
+    navigate('/game'); // Навігація на гру
     setIsGameOverOpen(false);
   };
 
   const handleEndGame = (results) => {
     setGameResults({ ...results, level: activeSize });
-    // Замість переходу на сторінку результатів, відкриваємо модалку (якщо це перемога)
-    // Або можна використовувати ResultsPage для статистики, а модалку для швидкої дії
     if (results.isWin) {
-        setIsGameOverOpen(true);
+      setIsGameOverOpen(true);
     } else {
-        // Якщо здалися - переходимо на сторінку результатів (стара логіка) або теж модалку
-        setCurrentPage('results');
+      navigate('/results'); // Навігація на результати
     }
   };
 
   const handleRestart = () => {
     setIsGameOverOpen(false);
-    // Тут є нюанс: GamePage не перемонтується, якщо просто змінити state.
-    // Найпростіший спосіб - скинути на 'start' на секунду, або передати ключ в GamePage
-    // Але в нашій реалізації GamePage має onRestart, який викликає хуки.
-    // Для повного перезапуску з модалки:
-    setCurrentPage('start'); 
-    setTimeout(() => setCurrentPage('game'), 0);
+    // Хак для перезавантаження компонента гри
+    navigate('/');
+    setTimeout(() => navigate('/game'), 0);
   };
 
   const handleNextLevel = () => {
-    const nextSize = activeSize >= 10 ? 10 : activeSize + 1; // Збільшуємо складність (але не більше 10)
+    const nextSize = activeSize >= 10 ? 10 : activeSize + 1;
     setActiveSize(nextSize);
-    
-    // Оновлюємо глобальні налаштування теж, якщо хочемо зберегти прогрес
-    setSettings(prev => ({ ...prev, size: nextSize }));
-    
+    updateSettings({ ...settings, size: nextSize });
     setIsGameOverOpen(false);
-    // Перезапуск гри
-    setCurrentPage('start');
-    setTimeout(() => setCurrentPage('game'), 0);
-  };
-
-  const handleBackToMenu = () => {
-    setIsGameOverOpen(false);
-    setCurrentPage('start');
+    navigate('/');
+    setTimeout(() => navigate('/game'), 0);
   };
 
   return (
     <div className="App">
-      {/* Кнопка налаштувань доступна на стартовій сторінці */}
-      {currentPage === 'start' && (
-        <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
-          <Button text="⚙️ Налаштування" onClick={() => setIsSettingsOpen(true)} variant="secondary" />
-        </div>
-      )}
-
-      {currentPage === 'start' && (
-        <StartPage onStartGame={handleStartGame} />
-      )}
-      
-      {currentPage === 'game' && (
-        <GamePage 
-          key={activeSize} // Ключ змушує компонент перестворитись при зміні розміру
-          size={activeSize}
-          onEndGame={handleEndGame}
-          // onRestart прокидається в GamePage для внутрішньої кнопки
-          onRestart={() => console.log('Restarting...')} 
+      {/* Навігаційна панель (можна винести в окремий компонент) */}
+      <nav style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', gap: '10px', zIndex: 100 }}>
+        <Button 
+          text="👤 Профіль" 
+          onClick={() => navigate(`/user/${settings.username}`)} // Динамічний роутинг з ID
+          variant="secondary" 
         />
-      )}
-      
-      {currentPage === 'results' && (
-        <ResultsPage 
-          moves={gameResults.moves}
-          time={gameResults.time}
-          level={activeSize}
-          isWin={gameResults.isWin}
-          onPlayAgain={() => handleStartGame(activeSize)}
-          onBackToMenu={handleBackToMenu}
+        <Button 
+          text="⚙️ Налаштування" 
+          onClick={() => setIsSettingsOpen(true)} 
+          variant="secondary" 
         />
-      )}
+      </nav>
 
-      {/* Модальне вікно налаштувань */}
+      <Routes>
+        <Route 
+          path="/" 
+          element={<StartPage onStartGame={handleStartGame} />} 
+        />
+        <Route 
+          path="/game" 
+          element={
+            <GamePage 
+              key={activeSize} 
+              size={activeSize}
+              onEndGame={handleEndGame}
+              onRestart={() => console.log('Restarting...')} 
+            />
+          } 
+        />
+        <Route 
+          path="/results" 
+          element={
+            <ResultsPage 
+              moves={gameResults.moves}
+              time={gameResults.time}
+              level={activeSize}
+              isWin={gameResults.isWin}
+              onPlayAgain={() => handleStartGame(activeSize)}
+              onBackToMenu={() => navigate('/')}
+            />
+          } 
+        />
+        {/* Динамічний роут для користувача */}
+        <Route path="/user/:userId" element={<UserPage />} />
+      </Routes>
+
       <Modal 
         isOpen={isSettingsOpen} 
         onClose={() => setIsSettingsOpen(false)} 
@@ -138,7 +117,6 @@ function App() {
         />
       </Modal>
 
-      {/* Модальне вікно завершення гри (Портал) */}
       <GameOverModal 
         isOpen={isGameOverOpen}
         results={gameResults}
