@@ -1,43 +1,56 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Header } from '../common/Header';
 import { Board } from '../game/Board';
 import { GameStats } from '../game/GameStats';
 import { Button } from '../common/Button';
+import { useGameLogic } from '../../hooks/useGameLogic';
+import { useTimer } from '../../hooks/useTimer';
 import './GamePage.css';
 
-export const GamePage = ({ size, onEndGame, onRestart }) => {
-  const [moves, setMoves] = useState(0);
-  const [time, setTime] = useState(0); // Зберігаємо час у секундах
+export const GamePage = ({ size, onEndGame, onRestart: propOnRestart }) => {
+  // Підключаємо кастомні хуки
+  const { board, moves, isWon, onCellClick, resetGame } = useGameLogic(size);
+  const { formatTime, start, stop, reset } = useTimer();
 
+  // Запускаємо таймер при старті
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTime(prevTime => prevTime + 1);
-    }, 1000);
+    start();
+    return () => stop();
+  }, [start, stop]);
 
-    return () => clearInterval(timer); // Очищення при розмонтуванні компонента
-  }, []);
+  // Слідкуємо за перемогою
+  useEffect(() => {
+    if (isWon) {
+      stop();
+      // Робимо невелику затримку перед показом результатів
+      setTimeout(() => {
+        onEndGame({ moves, time: formatTime(), isWin: true });
+      }, 500);
+    }
+  }, [isWon, stop, onEndGame, moves, formatTime]);
 
-  const formatTime = (totalSeconds) => {
-    const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
-    const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-    return `${minutes}:${seconds}`;
-  };
-
-  const handleCellClick = (row, col) => {
-    // Placeholder: Тут буде бізнес-логіка
-    console.log(`Cell clicked: ${row}, ${col}`);
-    setMoves(moves + 1);
+  // Обробник рестарту (об'єднує логіку гри та таймера)
+  const handleRestart = () => {
+    resetGame(); // Скидає дошку
+    reset();     // Скидає таймер на 0
+    start();     // Запускає таймер знову
   };
 
   return (
     <div className="game-page">
       <Header title="Світло Вимкнено" />
       <div className="game-container">
-        <GameStats moves={moves} time={formatTime(time)} level={size} />
-        <Board size={size} onCellClick={handleCellClick} />
+        <GameStats moves={moves} time={formatTime()} level={size} />
+        
+        {/* Передаємо board як grid */}
+        <Board grid={board} onCellClick={onCellClick} />
+        
         <div className="game-controls">
-          <Button text="Почати заново" onClick={onRestart} variant="secondary" />
-          <Button text="Вийти" onClick={onEndGame} />
+          <Button text="Почати заново" onClick={handleRestart} variant="secondary" />
+          <Button 
+            text="Здатися" 
+            onClick={() => onEndGame({ moves, time: formatTime(), isWin: false })} 
+          />
         </div>
       </div>
     </div>

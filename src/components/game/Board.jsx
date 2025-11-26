@@ -2,19 +2,19 @@ import React from 'react';
 import { Cell } from './Cell';
 import './Board.css';
 
-export const Board = ({ size = 5, grid, onCellClick }) => {
+export const Board = ({ grid, onCellClick }) => {
+  // grid - це тепер 2D масив boolean значень з useGameLogic
   return (
     <div className="board">
       <div className="board-grid">
-        {/* Placeholder: Grid rendering logic */}
-        {Array.from({ length: size }).map((_, row) => (
-          <div key={row} className="board-row">
-            {Array.from({ length: size }).map((_, col) => (
+        {grid.map((row, rowIndex) => (
+          <div key={rowIndex} className="board-row">
+            {row.map((isOn, colIndex) => (
               <Cell
-                key={`${row}-${col}`}
-                row={row}
-                col={col}
-                isOn={false}
+                key={`${rowIndex}-${colIndex}`}
+                row={rowIndex}
+                col={colIndex}
+                isOn={isOn} // Передаємо реальний стан
                 onClick={onCellClick}
               />
             ))}
