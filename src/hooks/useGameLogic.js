@@ -14,6 +14,13 @@ export const useGameLogic = (size) => {
       [1, 0],   // знизу
       [0, -1],  // зліва
       [0, 1],   // справа
+       /**
+        * Компонент кнопки.
+        * @param {Object} props - Властивості компонента.
+        * @param {string} props.label - Текст на кнопці.
+        * @param {function} props.onClick - Функція, що викликається при кліку.
+        * @returns {JSX.Element} React компонент.
+        */
     ];
 
     directions.forEach(([dr, dc]) => {

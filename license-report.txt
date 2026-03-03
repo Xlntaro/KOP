@@ -1,5 +1,21 @@
-└─ light-out-game@0.1.0
-   ├─ licenses: [1m[31mUNLICENSED[39m[22m
-   ├─ private: true
-   ├─ path: /home/xintaro/KOP
-   └─ licenseFile: /home/xintaro/KOP/LICENCE
+├─ MIT: 1182
+├─ ISC: 68
+├─ CC0-1.0: 43
+├─ Apache-2.0: 39
+├─ BSD-2-Clause: 39
+├─ BSD-3-Clause: 28
+├─ (MIT OR CC0-1.0): 4
+├─ Unlicense: 3
+├─ 0BSD: 2
+├─ Python-2.0: 1
+├─ MPL-2.0: 1
+├─ CC-BY-4.0: 1
+├─ BSD: 1
+├─ (Apache-2.0 OR MPL-1.1): 1
+├─ (AFL-2.1 OR BSD-3-Clause): 1
+├─ UNLICENSED: 1
+├─ BlueOak-1.0.0: 1
+├─ (BSD-3-Clause OR GPL-2.0): 1
+├─ CC-BY-3.0: 1
+└─ (MIT AND CC-BY-3.0): 1
+
