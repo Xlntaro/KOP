@@ -1,0 +1,5 @@
+└─ light-out-game@0.1.0
+   ├─ licenses: [1m[31mUNLICENSED[39m[22m
+   ├─ private: true
+   ├─ path: /home/xintaro/KOP
+   └─ licenseFile: /home/xintaro/KOP/LICENCE
