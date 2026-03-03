@@ -1,4 +1,20 @@
-# Getting Started with Create React App
+# KOP Project: Lights out game
+
+## Автор
+Студент: Лютянкський Дмитро
+
+## Конфігурація та вимоги
+- Node.js (рекомендовано v18+)
+- npm або yarn
+
+## Базові команди
+- `npm install` - встановлення всіх залежностей.
+- `npm start` - запуск проєкту в режимі розробки.
+- `npm run build` - збірка проєкту для продакшену.
+- `npm run storybook` - запуск середовища Storybook.
+
+## Ліцензія
+Цей проєкт ліцензовано за умовами ліцензії MIT. Детальніше дивіться у файлі [LICENSE](./LICENSE).
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
