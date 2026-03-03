@@ -10,6 +10,7 @@ import { GameOverModal } from './game/GameOverModal';
 import { Button } from './common/Button';
 import { useGameStore } from '../store/gameStore'; // Zustand store
 import './App.css';
+import CookieConsent from "react-cookie-consent";
 
 function App() {
   const navigate = useNavigate();
@@ -118,6 +119,19 @@ function App() {
         onRestart={handleRestart}
         onNextLevel={handleNextLevel}
       />
+      <CookieConsent
+        location="bottom"
+        buttonText="Зрозумів і приймаю"
+        cookieName="kop-game-gdpr-consent"
+        style={{ background: "#2B373B", zIndex: 9999 }}
+        buttonStyle={{ color: "#4e503b", fontSize: "14px", fontWeight: "bold", borderRadius: "5px", padding: "8px 15px" }}
+        expires={150}
+      >
+        Ця гра використовує локальне сховище (Local Storage) для збереження вашого прогресу, налаштувань та результатів згідно з вимогами GDPR.{" "}
+        <span style={{ fontSize: "11px", display: "block", marginTop: "5px" }}>
+          Продовжуючи грати, ви погоджуєтесь з нашою політикою конфіденційності.
+        </span>
+      </CookieConsent>
     </div>
   );
 }
